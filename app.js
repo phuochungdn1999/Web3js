@@ -24,7 +24,7 @@ async function send(privateKey,receiver,amount){
             value: web3.utils.toHex(web3.utils.toWei(amount,'ether')), 
         }
 
-        txObject.gasLimit =  300000
+        txObject.gasLimit = await web3.eth.estimateGas(txObject)
         txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
         console.log(txObject)
         //sign the transaction
