@@ -3,7 +3,7 @@ const Tx = require('ethereumjs-tx').Transaction;
 const web3 = new Web3('https://rinkeby.infura.io/v3/fffda8246d9241f2aa056b563090838d');
 
 const abi = require('./abis/ERC20.json')
-// console.log(abi)
+console.log(abi)
 
 async function loadContract() {
     return await new web3.eth.Contract(abi, '0xFb911c5c75d951e04054fd84c021568c0f11985D');
