@@ -3,14 +3,8 @@ const Tx = require('ethereumjs-tx').Transaction;
 const web3 = new Web3('https://rinkeby.infura.io/v3/fffda8246d9241f2aa056b563090838d');
 
 const abi = require('./abis/ERC20.json')
-// console.log(abi)
 
-const account1 = '0x6456be06d125C0B7F661E6E09E695AF4d59D58D1';
-const account2 = '0xc860c73f034D9182fafF474ACA6B61bdC4cF1997';
-const contractAddress = '0xc4b151f58Ae6eE80CD5A3829245ba8fAF1411dd5';
-const privateKey1 = '9c36bd51fd273f4b4843a76a6c83ab0931c7f5876806297e0b8112b29dd6c0ef';
-const privateKey2 = '57830367ec4b86607cf21e48c178698a3082bfb709cb6bd4b5fcc0a5dae5279d';
-
+const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 
 async function loadContract() {
     return await new web3.eth.Contract(abi, contractAddress);
@@ -48,7 +42,7 @@ const transfer = async (from,to,amount,ERC)=>{
     txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
 
     const raw = await signTransaction(txObject,privateKey1)
-    // console.log(raw)
+    console.log(raw)
 
     const transaction = await web3.eth.sendSignedTransaction(raw)
 
@@ -57,31 +51,31 @@ const transfer = async (from,to,amount,ERC)=>{
     // ERC.getPastEvents("Transfer", { fromBlock: 0 }).then((events) => console.log(events));
 }
 
-const getLog = async (ERC)=>{
-    ERC.getPastEvents("Transfer", { fromBlock: 0 }).then((events) => console.log(events));
+const getLog = async (ERC,name)=>{
+    ERC.getPastEvents(name, { fromBlock: 0 }).then((events) => console.log({events}));
 
 }
 
 const approve = async (from,to,amount,ERC)=>{
     try{
-    const data = ERC.methods.approve(to,amount).encodeABI()
-    const nonce = await web3.eth.getTransactionCount(from);
-    const txObject = {
-        nonce: nonce,
-        from:from,
-        to: contractAddress,
-        value: web3.utils.toHex(0), 
-        data:data
-    }
-        txObject.gasLimit = await web3.eth.estimateGas(txObject)
-        txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
-    
-        const raw = await signTransaction(txObject,privateKey1)
+        const data = ERC.methods.approve(to,amount).encodeABI()
+        const nonce = await web3.eth.getTransactionCount(from);
+        const txObject = {
+            nonce: nonce,
+            from:from,
+            to: contractAddress,
+            value: web3.utils.toHex(0), 
+            data:data
+        }
+            txObject.gasLimit = await web3.eth.estimateGas(txObject)
+            txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
 
-        // console.log(raw)
-        const transaction = await web3.eth.sendSignedTransaction(raw)
-    
-        console.log({transaction})
+            const raw = await signTransaction(txObject,privateKey1)
+
+            // console.log(raw)
+            const approve = await web3.eth.sendSignedTransaction(raw)
+
+            console.log({approve})
     }catch(error){
         console.log({error})
     }
@@ -102,11 +96,13 @@ const signTransaction = async (txObject,privateKey)=>{
 
 const run = async ()=>{
     const ERC = await load()
-    // console.log(await getDetail(ERC))
-    // transfer(account1,account2,120,ERC)
+    console.log(await getDetail(ERC))
+    transfer(account1,account2,167,ERC)
     // console.log(await getBalance(ERC))
-    // getLog(ERC)
-    approve(account1,account2,41688,ERC);
+    // console.log(account1)
+    // approve(account1,account2,111111,ERC);
+    // getLog(ERC,'Transfer')
+    // getLog(ERC,'Approval')
 }
 run()
 
