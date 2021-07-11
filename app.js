@@ -2,7 +2,7 @@ const Web3 = require('web3');
 const Tx = require('ethereumjs-tx').Transaction;
 const web3 = new Web3('https://rinkeby.infura.io/v3/fffda8246d9241f2aa056b563090838d');
 
-const abi = require('./abis/ERC721.json')
+const abi = require('./abis/ERC1155.json')
 
 const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 
@@ -21,8 +21,12 @@ const getDetail = async (ERC)=>{
     const symbol = await ERC.methods.symbol().call()
     return  {name,symbol}
 }
-const getBalanceOf = async (ERC,account)=>{
-    const balance = await ERC.methods.balanceOf(account).call()
+const getBalanceOf = async (ERC,account,tokenId)=>{
+    const balance = await ERC.methods.balanceOf(account,tokenId).call()
+    return  {balance}
+}
+const getBalanceOfBatch = async (ERC,arrayAccount,arrayTokenId)=>{
+    const balance = await ERC.methods.balanceOfBatch(arrayAccount,arrayTokenId).call()
     return  {balance}
 }
 
@@ -136,15 +140,17 @@ const signTransaction = async (txObject,privateKey)=>{
 
 const run = async ()=>{
     const ERC = await load()
-    console.log(await getDetail(ERC))
-    console.log(await getBalanceOf(ERC,account2))
+    console.log(await getBalanceOf(ERC,account1,1))
+    const array = [account1,account1]
+    const tokenId = [1,2]
+    console.log(await getBalanceOfBatch(ERC,array,tokenId))
     // transfer(account1,account2,contractAddress,5,ERC)
     // safeTransfer(account1,account2,contractAddress,6,ERC)
     // approve(account1,account2,7,ERC);
     // getLog(ERC,'Transfer')
     // getLog(ERC,'Approval')
-    console.log(await ownerOf(ERC,1))
-    console.log(await getApproved(ERC,3))
+    // console.log(await ownerOf(ERC,1))
+    // console.log(await getApproved(ERC,3))
 
     
 }   
