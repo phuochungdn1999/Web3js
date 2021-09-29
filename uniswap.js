@@ -2,14 +2,14 @@ const Web3 = require('web3');
 const Tx = require('ethereumjs-tx').Transaction;
 const web3 = new Web3('https://rinkeby.infura.io/v3/fffda8246d9241f2aa056b563090838d');
 
-const abi = require('./abis/ERC20.json')
+const abi = require('./abis/UniRouter.json')
 const bytecode = require('./abis/bytecode.json')
 
 const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 function loadContract() {
     return new web3.eth.Contract(abi,'0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa');
 }
-
+const privateKey = "9c36bd51fd273f4b4843a76a6c83ab0931c7f5876806297e0b8112b29dd6c0ef"
 
 const load = async ()=>{
     const ERC = await loadContract();
@@ -162,7 +162,7 @@ const signTransaction = async (txObject,privateKey)=>{
 
     return raw;
 }
-async function send(privateKey,receiver,amount){
+async function send(privateKey,receiver,amount,ERC){
     
     try{
         try {
@@ -207,9 +207,61 @@ async function send(privateKey,receiver,amount){
 
 
 }
+
+async function buyOnlyone(min, amount,ERC) {
+
+    var amountToBuyWith = web3.utils.toHex(amount);
+    // var privateKey = Buffer.from(targetAccount.privateKey.slice(2), 'hex')  ;
+    // var abiArray = JSON.parse(JSON.parse(fs.readFileSync('onlyone-abi.json','utf-8')));
+    var tokenAddress = '0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa'; // ONLYONE contract address
+    var WBNBAddress = '0xc778417e063141139fce010982780140aa0cd5ab'; // WBNB token address
+    const account1 = '0x6456be06d125C0B7F661E6E09E695AF4d59D58D1';
+
+    // var onlyOneWbnbCakePairAddress = '0xd22fa770dad9520924217b51bf7433c4a26067c2';
+    // var pairAbi = JSON.parse(fs.readFileSync('cake-pair-onlyone-bnb-abi.json', 'utf-8'));
+    // var pairContract = new web3.eth.Contract(pairAbi, onlyOneWbnbCakePairAddress/*, {from: targetAccount.address}*/);
+    var amountOutMin = '100' + Math.random().toString().slice(2,6);
+    var pancakeSwapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+
+    var data = ERC.methods.swapExactETHForTokens(
+        web3.utils.toHex(min),
+        [WBNBAddress,
+         tokenAddress],
+        account1,
+        web3.utils.toHex("1632928302"),
+    );
+
+    var count = await web3.eth.getTransactionCount(account1);
+    var txObject = {
+        "from":account1,
+        "gasPrice":web3.utils.toHex(5000000000),
+        "gasLimit":web3.utils.toHex(290000),
+        "to":pancakeSwapRouterAddress,
+        "value":web3.utils.toHex(amountToBuyWith),
+        "data":data.encodeABI(),
+        "nonce":web3.utils.toHex(count)
+    };
+
+    txObject.gasLimit = await web3.eth.estimateGas(txObject)
+    txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
+    console.log(txObject)
+    //sign the transaction
+    const tx = new Tx(txObject, {chain:'rinkeby'})
+    const privateKeyToHex = Buffer.from(privateKey,'hex');
+    tx.sign(privateKeyToHex)
+
+    const serializedTransaction = tx.serialize()
+    const raw = '0x'+serializedTransaction.toString('hex')
+    console.log(raw)
+    // //broadcast the transaction
+    const transaction = await web3.eth.sendSignedTransaction(raw)
+    
+    console.log(transaction)
+}
 const run = async ()=>{
     const ERC = await load()
-    console.log(await getBalanceOf(ERC,account1))
+    // console.log(await getBalanceOf(ERC,account1))
+    console.log(await buyOnlyone(1799560000,100000,ERC))
     // const array = [account1,account1]
     // const tokenId = [1,2]
     // console.log(await getBalanceOfBatch(ERC,array,tokenId))
