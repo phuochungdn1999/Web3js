@@ -7,7 +7,7 @@ const bytecode = require('./abis/bytecode.json')
 
 const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 function loadContract() {
-    return new web3.eth.Contract(abi,'0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa');
+    return new web3.eth.Contract(abi,'0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea');
 }
 
 
@@ -22,7 +22,7 @@ const getDetail = async (ERC)=>{
     return  {name,symbol}
 }
 const getBalanceOf = async (ERC,account)=>{
-    const balance = await ERC.methods.balanceOf("0xf7C267A46BF8eE95454AEcbb33a762F0AEFD4c06").call()
+    const balance = await ERC.methods.balanceOf(account).call()
     return  {balance}
 }
 const getBalanceOfBatch = async (ERC,arrayAccount,arrayTokenId)=>{
@@ -209,7 +209,7 @@ async function send(privateKey,receiver,amount){
 }
 const run = async ()=>{
     const ERC = await load()
-    console.log(await getBalanceOf(ERC,account1))
+    console.log(await getBalanceOf(ERC,'0x6456be06d125C0B7F661E6E09E695AF4d59D58D1'))
     // const array = [account1,account1]
     // const tokenId = [1,2]
     // console.log(await getBalanceOfBatch(ERC,array,tokenId))
