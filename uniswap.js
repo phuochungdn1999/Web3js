@@ -6,6 +6,12 @@ const abi = require('./abis/UniRouter.json')
 const bytecode = require('./abis/bytecode.json')
 const BigNumber = require('bignumber.js');
 
+// const transactionHash = '0x27c434cf56a44547a4a638df85745b62af0894ad1f857d765e1c0f256ae0d7d3';
+// web3.eth.getTransaction(transactionHash, function (error, result){
+//     console.log("567567567")
+//     console.log(result);
+// });
+
 const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 
 
@@ -119,8 +125,8 @@ async function buyOnlyone(min,amount,ERC) {
 
 async function getAmountOut(amount,ERC) {
 
-    const DALAddress = '0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea'
-    const WETH = '0xc778417e063141139fce010982780140aa0cd5ab'
+    const DALAddress = '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984'
+    const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 
     const address = [WETH,DALAddress]
 try {
@@ -134,8 +140,8 @@ try {
 
 async function getAmountIn(amount,ERC) {
 
-    const DALAddress = '0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea'
-    const WETH = '0xc778417e063141139fce010982780140aa0cd5ab'
+    const DALAddress = '0x6b175474e89094c44da98b954eedeac495271d0f'
+    const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 
     const address = [WETH,DALAddress]
 try {
@@ -151,8 +157,8 @@ try {
 
 const run = async ()=>{
     const ERC = await load()
-    // var out = await getAmountOut(new BigNumber(1000000000000000000), ERC)
-    // console.log(out)
+    var out = await getAmountOut(new BigNumber(1000000000000000000), ERC)
+    console.log(out)
     // var outMin = new BigNumber(out[1])
     // console.log(outMin)
     // const percent = 99.5
@@ -161,9 +167,9 @@ const run = async ()=>{
     // outMin = outMin.toFixed(0)
     // console.log(BigNumber.isBigNumber(outMin))
     // console.log(await getAmountIn(new BigNumber(1000000000000000000), ERC))
-    console.log(await buyOnlyone(new BigNumber(1000000000000000000),new BigNumber(135210521744283),ERC))
+    // console.log(await buyOnlyone(new BigNumber(1000000000000000000),new BigNumber(135210521744283),ERC))
     // console.log(await getAmountMin(new BigNumber(3000000000000000000),50) )
-    fetch()
+    // fetch()
     
 }   
 run()
