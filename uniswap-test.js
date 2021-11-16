@@ -1,11 +1,10 @@
 const Web3 = require("web3");
 const Tx = require("ethereumjs-tx").Transaction;
 const web3 = new Web3(
-  "https://kovan.infura.io/v3/fffda8246d9241f2aa056b563090838d"
+  "https://rinkeby.infura.io/v3/fffda8246d9241f2aa056b563090838d"
 );
 
 const abi = require("./abis/UniRouter.json");
-const BigNumber = require("bignumber.js");
 
 const {
   account1,
@@ -15,6 +14,7 @@ const {
   privateKey2,
 } = require("./contract");
 
+const BigNumber = require("bignumber.js");
 const {
   ChainId,
   Token,
@@ -28,8 +28,8 @@ const {
 
 const DAI = new Token(
   ChainId.RINKEBY,
-  "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
-  18
+  "0x3E7fb9668e145DA12Ddb22Ca50892C3241bc9A1C",
+  2
 );
 const WETH = new Token(
   ChainId.RINKEBY,
@@ -54,12 +54,13 @@ async function getAmountFromEth(amountOfEth, percent) {
   const pair = await Fetcher.fetchPairData(DAI, WETH);
 
   const routeWethForDai = new Route([pair], WETH);
-  console.log(routeWethForDai.midPrice.toSignificant(100)); // 201.306
 
+  const decimal = WETH.decimals
   // console.log(BigInt(amountOfEth*1E18))
+  console.log(Math.pow(10,decimal))
   const tradeWethForDai = new Trade(
     routeWethForDai,
-    new TokenAmount(WETH, BigInt(amountOfEth * 1e18)),
+    new TokenAmount(WETH, BigInt(amountOfEth * Math.pow(10,decimal))),
     TradeType.EXACT_INPUT
   );
   const slippageTolerance = new Percent(percent, "1000");
@@ -71,8 +72,9 @@ async function getAmountFromEth(amountOfEth, percent) {
   const amountOf1Eth = tradeWethForDai.executionPrice.toSignificant(9);
   const amountOfOutputDAL = tradeWethForDai.outputAmount.toSignificant(9);
   const priceImpact = tradeWethForDai.priceImpact.toSignificant(9);
+  const nextMidPrice = tradeWethForDai.nextMidPrice.toSignificant(9);
 
-  return { amountMinDAL, amountOf1Eth, amountOfOutputDAL, priceImpact };
+  return { amountMinDAL, amountOf1Eth, amountOfOutputDAL, priceImpact,nextMidPrice };
 }
 
 async function getAmountFromEth1(amountOfEth, percent) {
@@ -96,11 +98,12 @@ async function getAmountFromEth1(amountOfEth, percent) {
 
 async function getAmountFromDAL(amountOfDAL, percent) {
   const pair = await Fetcher.fetchPairData(DAI, WETH);
-  console.log({ amountOfDAL });
+  console.log(WETH.decimals);
+  const decimal = DAI.decimals;
   const routeWethForDai = new Route([pair], WETH);
   const tradeWethForDai = new Trade(
     routeWethForDai,
-    new TokenAmount(DAI, BigInt(amountOfDAL * 1e18)),
+    new TokenAmount(DAI, BigInt(amountOfDAL * Math.pow(10,decimal))),
     TradeType.EXACT_OUTPUT
   );
   const slippageTolerance = new Percent("10", "1000");
@@ -211,9 +214,9 @@ async function buyOnlyone2(min, amount, ERC) {
 
 const run = async () => {
   const ERC = await load();
-  const output = await getAmountFromEth(0.00045, 10);
+  const output = await getAmountFromEth(0.00001, 10);
   // console.log({output})
-  // const output = await getAmountFromDAL(1000,10)
+//   const output = await getAmountFromDAL(100,10)
   console.log({ output });
   // buyOnlyone(output.amountMinDAL,new BigNumber(1000000000000000000),ERC)
   // buyOnlyone(BigInt(1*1E18),BigInt(output.amountMinDAL*1E18),ERC)

@@ -1,201 +1,65 @@
 const Web3 = require("web3");
-const Tx = require("ethereumjs-tx").Transaction;
-const web3 = new Web3("wss://shibuya.eusko.in");
+var Tx = require("ethereumjs-tx").Transaction
+const common = require('ethereumjs-common').default;
+// const web3 = new Web3('https://rpc-mumbai.matic.today');
+const Moralis = require('moralis/node');
 
+const serverUrl = "https://cq3wxyxczdtu.usemoralis.com:2053/server";
+const appId = "au2Urg5BPMsHBVo0ngFic3eOM4qL2NFW1ibQTogZ";
+Moralis.start({ serverUrl, appId });
 const abi = require("./abis/ERC721.json");
 
-const {
-  account1,
-  account2,
-  contractAddress,
-  privateKey1,
-  privateKey2,
-} = require("./contract");
+const web3 = new Moralis.Web3('https://speedy-nodes-nyc.moralis.io/8050153ba727567749f63d00/polygon/mumbai');
 
-function loadContract() {
-  return new web3.eth.Contract(
-    abi,
-    "0x10f760d29b067ba908975d905e29dd1a333c67ad"
-  );
-}
+const contract = new web3.eth.Contract(abi, '0x5F855E730F50029526B111ae3f2706b6F99dd01B');
+const {account1,account2,contractAddress,privateKey1,privateKey2} = require('./contract');
 
-const load = async () => {
-  const ERC = await loadContract();
-  return ERC;
-};
+async function mint() {
+  
+  var data = contract.methods.mint('0x479Dc3d96A1C8F7Be1306d6a8a381795e8097E3c','4','QmSFCUAJ8Kw1S1J5Bgro1ZmpiJQhWaQ2Nm8ikQ2ahivvVK');
 
-const getDetail = async (ERC) => {
-  const name = await ERC.methods.name().call();
-  const symbol = await ERC.methods.symbol().call();
-  return { name, symbol };
-};
-const getBalanceOf = async (ERC, account, tokenId) => {
-  const balance = await ERC.methods.balanceOf(account).call();
-  return { balance };
-};
-const getBalanceOfBatch = async (ERC, arrayAccount, arrayTokenId) => {
-  const balance = await ERC.methods
-    .balanceOfBatch(arrayAccount, arrayTokenId)
-    .call();
-  return { balance };
-};
-
-const ownerOf = async (ERC, tokenId) => {
-  const owner = await ERC.methods.ownerOf(tokenId).call();
-  return { owner };
-};
-
-const getApproved = async (ERC, tokenId) => {
-  const address = await ERC.methods.getApproved(tokenId).call();
-  return { address };
-};
-
-const transfer = async (from, to, contractAddress, tokenId, ERC) => {
-  const data = ERC.methods.z(from, to, tokenId).encodeABI();
-  console.log({ data });
-  const nonce = await web3.eth.getTransactionCount(from);
-  const txObject = {
-    nonce: nonce,
-    from: from,
-    to: contractAddress,
-    value: web3.utils.toHex(0),
-    data: data,
+  var count = await web3.eth.getTransactionCount(account1);
+  var txObject = {
+      from:'0x6456be06d125C0B7F661E6E09E695AF4d59D58D1',
+      to:'0x5F855E730F50029526B111ae3f2706b6F99dd01B',
+      value:0x0,
+      data:data.encodeABI(),
+      nonce:web3.utils.toHex(count)
   };
 
-  txObject.gasLimit = await web3.eth.estimateGas(txObject);
-  txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice());
+  txObject.gasLimit = await web3.eth.estimateGas(txObject)
+  txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice())
+  console.log(txObject)
 
-  const raw = await signTransaction(txObject, privateKey1);
-  console.log(raw);
+  const commonMatic = common.forCustomChain(
+    'mainnet',
+    {
+      name: 'matic-test',
+      networkId: 80001,
+      chainId: 80001,
+      url: 'https://speedy-nodes-nyc.moralis.io/8050153ba727567749f63d00/polygon/mumbai'
+    },
+    'petersburg'
+  )
+  //sign the transaction
+  const tx = new Tx(txObject, {common:commonMatic})
+  const privateKeyToHex = Buffer.from('9c36bd51fd273f4b4843a76a6c83ab0931c7f5876806297e0b8112b29dd6c0ef','hex');
+  tx.sign(privateKeyToHex)
 
-  const transaction = await web3.eth.sendSignedTransaction(raw);
-
-  console.log({ transaction });
-};
-
-const safeTransfer = async (from, to, contractAddress, tokenId, ERC) => {
-  const data = ERC.methods.safeTransferFrom(from, to, tokenId).encodeABI();
-  console.log({ data });
-  const nonce = await web3.eth.getTransactionCount(from);
-  const txObject = {
-    nonce: nonce,
-    from: from,
-    to: contractAddress,
-    value: web3.utils.toHex(0),
-    data: data,
-  };
-
-  txObject.gasLimit = await web3.eth.estimateGas(txObject);
-  txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice());
-
-  const raw = await signTransaction(txObject, privateKey1);
-  console.log(raw);
-
-  const transaction = await web3.eth.sendSignedTransaction(raw);
-
-  console.log({ transaction });
-};
-
-const getLog = async (ERC, name) => {
-  // ERC.getPastEvents(name, { fromBlock: 0 }).then((events) => console.log({events}));
-  const events = await ERC.getPastEvents(name, {
-    filter: { to: "0x0448858fCAF2c8E3F1aAd5426D1494031eA4532c" }, // Using an array means OR: e.g. 20 or 23
-    fromBlock: 0,
-    toBlock: "latest",
-  });
-  events.forEach((event) => {
-    console.log({ event: event.returnValues });
-  });
-};
-
-const approve = async (from, to, tokenId, ERC) => {
+  const serializedTransaction = tx.serialize()
+  const raw = '0x'+serializedTransaction.toString('hex')
+  console.log(raw)
+  // //broadcast the transaction
   try {
-    const data = ERC.methods.approve(to, tokenId).encodeABI();
-    const nonce = await web3.eth.getTransactionCount(from);
-    const txObject = {
-      nonce: nonce,
-      from: from,
-      to: contractAddress,
-      value: web3.utils.toHex(0),
-      data: data,
-    };
-    txObject.gasLimit = await web3.eth.estimateGas(txObject);
-    txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice());
-
-    const raw = await signTransaction(txObject, privateKey1);
-
-    // console.log(raw)
-    const approve = await web3.eth.sendSignedTransaction(raw);
-
-    console.log({ approve });
+      const transaction = await web3.eth.sendSignedTransaction(raw)
+  
+      console.log(transaction)
   } catch (error) {
-    console.log({ error });
+      console.log(error)
   }
-};
 
-const signTransaction = async (txObject, privateKey) => {
-  const tx = new Tx(txObject, { chain: "rinkeby" });
-  const privateKeyToHex = Buffer.from(privateKey, "hex");
-  tx.sign(privateKeyToHex);
-
-  const serializedTransaction = tx.serialize();
-  const raw = "0x" + serializedTransaction.toString("hex");
-
-  return raw;
-};
-async function send(privateKey, receiver, amount) {
-  try {
-    try {
-      var sender = web3.eth.accounts.privateKeyToAccount(privateKey);
-    } catch (error) {
-      throw new Error("Invalid Private key");
-    }
-    if (!web3.utils.isAddress(receiver)) {
-      throw new Error("Invalid receiver address");
-    }
-    const privateKeyToHex = Buffer.from(privateKey, "hex");
-    const nonce = await web3.eth.getTransactionCount(sender.address);
-    console.log("address", sender.address);
-
-    //build the transaction
-    const txObject = {
-      nonce: nonce,
-      to: receiver,
-      value: web3.utils.toHex(web3.utils.toWei(amount, "ether")),
-    };
-
-    txObject.gasLimit = await web3.eth.estimateGas(txObject);
-    txObject.gasPrice = web3.utils.toHex(await web3.eth.getGasPrice());
-    console.log(txObject);
-    //sign the transaction
-    const tx = new Tx(txObject, { chain: "rinkeby" });
-    tx.sign(privateKeyToHex);
-
-    const serializedTransaction = tx.serialize();
-    const raw = "0x" + serializedTransaction.toString("hex");
-    console.log(raw);
-    // //broadcast the transaction
-    const transaction = await web3.eth.sendSignedTransaction(raw);
-
-    console.log(transaction);
-  } catch (err) {
-    console.log("error: ", err);
-  }
 }
-const run = async () => {
-  const ERC = await load();
-  console.log(await getBalanceOf(ERC, account1));
-  // const array = [account1,account1]
-  // const tokenId = [1,2]
-  // console.log(await getBalanceOfBatch(ERC,array,tokenId))
-  // transfer(account1,account2,contractAddress,5,ERC)
-  // safeTransfer(account1,account2,contractAddress,6,ERC)
-  // approve(account1,account2,7,ERC);
-  // getLog(ERC,'Transfer')
-  // getLog(ERC,'Approval')
-  // console.log(await ownerOf(ERC,1))
-  // console.log(await getApproved(ERC,3))
-};
-run();
 
-// send('9c36bd51fd273f4b4843a76a6c83ab0931c7f5876806297e0b8112b29dd6c0ef','0xc860c73f034D9182fafF474ACA6B61bdC4cF1997','0.00000001');
+mint()
+
+

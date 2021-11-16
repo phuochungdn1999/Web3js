@@ -1,0 +1,38 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amounts",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address[]",
+				"name": "receipents",
+				"type": "address[]"
+			}
+		],
+		"name": "batchEtherSend",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amounts",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "receipents",
+				"type": "address"
+			}
+		],
+		"name": "sendSDN",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	}
+]
