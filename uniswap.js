@@ -1,6 +1,6 @@
 const Web3 = require('web3');
 const Tx = require('ethereumjs-tx').Transaction;
-const web3 = new Web3('https://data-seed-prebsc-1-s1.binance.org:8545/');
+const web3 = new Web3('https://speedy-nodes-nyc.moralis.io/8050153ba727567749f63d00/eth/rinkeby');
 
 const abi = require('./abis/UniRouter.json')
 const bytecode = require('./abis/bytecode.json')
@@ -64,7 +64,7 @@ const fetch = async () => {
 
 const privateKey = "9c36bd51fd273f4b4843a76a6c83ab0931c7f5876806297e0b8112b29dd6c0ef"
 
-const uniswapAddress = '0xd99d1c33f9fc3444f8101754abc46c52416550d1'
+const uniswapAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 
 function loadContract() {
     return new web3.eth.Contract(abi,uniswapAddress);
@@ -125,8 +125,9 @@ async function buyOnlyone(min,amount,ERC) {
 
 async function getAmountOut(amount,ERC) {
 
-    const DALAddress = '0xae13d989dac2f0debff460ac112a837c89baa7cd'
-    const WETH = '0xe02df9e3e622debdd69fb838bb799e3f168902c5'
+    const DALAddress = '0x547370B9607B16B517958764326a2Fd198Fc9CE3'
+    // const DAL_LPAddress = '0x4eCbC91397384D861b44002FDDA7e40A3dd48684'
+    const WETH = '0xc778417E063141139Fce010982780140Aa0cD5Ab'
 
     const address = [WETH,DALAddress]
 try {
@@ -157,7 +158,7 @@ try {
 
 const run = async ()=>{
     const ERC = await load()
-    var out = await getAmountOut(new BigNumber(100000000000000), ERC)
+    var out = await getAmountOut(new BigNumber(1000000000000000), ERC)
     console.log(out)
     // var outMin = new BigNumber(out[1])
     // console.log(outMin)
